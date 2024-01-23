@@ -5,6 +5,7 @@
 ### External and Internal Usage
 Functions for internal and external usage are defined in the Memory namespace, with functions specifically made for external usage end in Ex
 A dll can be very simply injected with the Memory::simpleInject() function<br>
+
 *Note: if your injected dll depends on asgard, a way to make it work is to inject asgard into the target application, then inject your own dll.*
 
 ### Driver Usage
