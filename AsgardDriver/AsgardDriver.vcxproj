@@ -125,6 +125,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cleaner.h" />
     <ClInclude Include="definitions.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="memory.h" />

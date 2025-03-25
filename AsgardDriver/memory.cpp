@@ -57,7 +57,7 @@ bool mem::WriteMemory(void* address, void* buffer, size_t size) {
 		return false;
 	}
 	return true;
-	
+
 }
 bool mem::WriteReadOnlyMemory(void* address, void* buffer, size_t size) {
 
@@ -183,13 +183,14 @@ bool mem::WriteKernelMemory(HANDLE pid, uintptr_t address, void* buffer, SIZE_T 
 
 	if ((info.Protect & PAGE_EXECUTE_WRITECOPY) || (info.Protect & PAGE_EXECUTE_READWRITE) || (info.Protect & PAGE_READWRITE) || (info.Protect & PAGE_WRITECOPY)) {
 		RtlCopyMemory((void*)address, buffer, size);
-	} else {
+	}
+	else {
 		KeUnstackDetachProcess(&state);
 
 		PMDL mdl = IoAllocateMdl((void*)address, size, FALSE, FALSE, NULL);
 		if (!mdl) { return false; }
 
-		MmProbeAndLockProcessPages(mdl,process, KernelMode, IoReadAccess);
+		MmProbeAndLockProcessPages(mdl, process, KernelMode, IoReadAccess);
 		void* map = MmMapLockedPagesSpecifyCache(mdl, KernelMode, MmNonCached, NULL, FALSE, NormalPagePriority);
 		MmProtectMdlSystemAddress(mdl, PAGE_READWRITE);
 
@@ -199,10 +200,9 @@ bool mem::WriteKernelMemory(HANDLE pid, uintptr_t address, void* buffer, SIZE_T 
 		MmUnlockPages(mdl);
 		IoFreeMdl(mdl);
 
-		
+
 		return true;
 	}
 	KeUnstackDetachProcess(&state);
 	return true;
 }
-

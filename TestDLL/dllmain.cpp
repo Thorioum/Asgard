@@ -12,6 +12,7 @@
 //
 
 DWORD WINAPI MainThread(HMODULE hmodule) {
+    //user mode
     MessageBox(NULL, "injected!", "yipee", NULL);
 
     DWORD procId = Memory::getProcId("wesnoth.exe");
@@ -37,10 +38,12 @@ DWORD WINAPI MainThread(HMODULE hmodule) {
             }
             //original instruction                                               //sub [edx+4] eax 
             Memory::patchFunction((BYTE*)(moduleBaseAddr + patternAddr), (BYTE*)"\x29\x42\x04", 3);
+
+            MessageBox(NULL, "finished patching: ", AsgardUtils::uintptrToString(patternAddr).c_str(), NULL);
         }
 
-
     }
+
 
     FreeLibraryAndExitThread(hmodule, 0);
     return 0;

@@ -18,7 +18,7 @@ typedef struct _INSTRUCTIONS {
     _INSTRUCTION instruction;
 
     void* output;
-} _INSTRUCTIONS, * _PINSTRUCTIONS;
+} _INSTRUCTIONS;
 
 
 namespace mem {

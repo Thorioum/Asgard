@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <sstream>
 #include <psapi.h>
-#include <regex>
 #include <tlhelp32.h>
 #include <list>
 #include <filesystem>
@@ -34,7 +33,7 @@ typedef struct _INSTRUCTIONS {
     _INSTRUCTION instruction;
 
     void* output;
-} _INSTRUCTIONS, * _PINSTRUCTIONS;
+} _INSTRUCTIONS;
 
 struct HandleDisposer {
     using pointer = HANDLE;
@@ -63,7 +62,7 @@ namespace Memory {
     bool DLLEXPORT read(HANDLE proc, uintptr_t address, LPVOID buffer, size_t size);
 
     template<class R> DLLEXPORT
-    R read(HANDLE proc, uintptr_t address) {
+        R read(HANDLE proc, uintptr_t address) {
         R response{};
         read(proc, address, &response, sizeof(R));
         return response;
@@ -74,12 +73,12 @@ namespace Memory {
     bool DLLEXPORT write(HANDLE proc, void* address, void* source_address, size_t write_size);
 
     template<typename W> DLLEXPORT
-    bool write(HANDLE proc, uintptr_t address, const W& value)
+        bool write(HANDLE proc, uintptr_t address, const W& value)
     {
         return write(proc, address, (uintptr_t)&value, sizeof(W));
     }
 
-    
+
     bool DLLEXPORT NOPFunctionEx(HANDLE proc, BYTE* dest, unsigned int size);
 
     bool DLLEXPORT patchFunctionEx(HANDLE proc, BYTE* dest, BYTE* src, unsigned int size);
@@ -93,27 +92,24 @@ namespace KernelMemory {
     void DLLEXPORT loadDriver();
 
     template<typename ...Arg> DLLEXPORT
-    void call_hook(const Arg ...args)
-    {
-        const char* funcName = "NtDxgkGetTrackedWorkloadStatistics";
-        const char* dllName = "win32u.dll";
+        uint64_t call_hook(const Arg ...args) {
 
-        void* hooked_func = GetProcAddress(LoadLibrary(dllName), funcName);
-
-        auto func = static_cast<uint64_t(_stdcall*)(Arg...)>(hooked_func);
-        func(args ...);
+        void* hooked_func = GetProcAddress(LoadLibrary("win32u.dll"), "NtDxgkGetTrackedWorkloadStatistics");
+       
+        auto func = static_cast<uint64_t(__stdcall*)(Arg...)>(hooked_func);
+        return func(args...);
     }
 
     uintptr_t DLLEXPORT getDMAAddy(DWORD procId, uintptr_t ptr, std::vector<unsigned int> offsets);
 
     uintptr_t DLLEXPORT getModuleBaseAddr(DWORD procId, const char* modName);
 
-    
+
 
     void DLLEXPORT read(DWORD procId, uintptr_t address, LPVOID buffer, size_t size);
 
     template<class R> DLLEXPORT
-    R read(DWORD procId, uintptr_t address) {
+        R read(DWORD procId, uintptr_t address) {
 
         R response{};
         _INSTRUCTIONS instructions = { 0 };
@@ -129,9 +125,12 @@ namespace KernelMemory {
     bool DLLEXPORT write(DWORD procId, uintptr_t address, uintptr_t source_address, size_t write_size);
 
     template<typename W> DLLEXPORT
-    bool write(DWORD procId, uintptr_t address, const W& value)
+        bool write(DWORD procId, uintptr_t address, const W& value)
     {
         return write(procId, address, (uintptr_t)&value, sizeof(W));
     }
+
     bool DLLEXPORT NOPFunction(DWORD procId, uintptr_t address, int bytes);
+    bool DLLEXPORT patchFunction(DWORD procId, uintptr_t address, BYTE* src, int bytes);
+
 };

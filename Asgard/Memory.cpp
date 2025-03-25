@@ -8,7 +8,7 @@ bool DLLEXPORT Memory::simpleInject(const char* dllPath, HANDLE proc)
 
     void* alloc = VirtualAllocEx(proc, NULL, MAX_PATH, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    bool a = WriteProcessMemory(proc, alloc, dllPath, strlen(dllPath) + 1,0);
+    bool a = WriteProcessMemory(proc, alloc, dllPath, strlen(dllPath) + 1, 0);
     if (!a) return false;
     HANDLE thread = CreateRemoteThread(proc, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibraryA, alloc, NULL, NULL);
 
@@ -186,7 +186,7 @@ uintptr_t KernelMemory::getDMAAddy(DWORD procId, uintptr_t ptr, std::vector<unsi
     return addr;
 }
 
-void KernelMemory::read(DWORD procId, uintptr_t address,LPVOID buffer, size_t size) {
+void KernelMemory::read(DWORD procId, uintptr_t address, LPVOID buffer, size_t size) {
 
     _INSTRUCTIONS instructions = { 0 };
     instructions.pid = procId;
@@ -204,7 +204,22 @@ bool KernelMemory::NOPFunction(DWORD procId, uintptr_t address, int bytes)
         KernelMemory::write<char>(procId, address, NOP);
         address += 0x1;
     }
-   
+
+    return true;
+}
+
+bool DLLEXPORT KernelMemory::patchFunction(DWORD procId, uintptr_t address, BYTE* src, int bytes)
+{
+    _INSTRUCTIONS instructions = { 0 };
+
+    instructions.pid = procId;
+    instructions.size = bytes;
+    instructions.address = address;
+    instructions.instruction = WRITE;
+    instructions.buffer_address = (void*)src;
+
+    call_hook(&instructions);
+
     return true;
 }
 
@@ -222,4 +237,3 @@ bool KernelMemory::write(DWORD procId, uintptr_t address, uintptr_t source_addre
 
     return true;
 }
-
